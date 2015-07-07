@@ -1,0 +1,36 @@
+editor:
+  image: jess/atom
+  volumes:
+    - /tmp/.X11-unix:/tmp/.X11-unix
+    - .:/usr/src/ourcompanyproject
+  environment:
+    DISPLAY: unix:0
+  restart: on-failure:5
+
+registry:
+  image: registry:2
+  command: /hooks-config.yml
+  ports:
+    - "5000:5000"
+  links:
+    - pump:webhookmonitor
+  volumes:
+    - ./registry/webhooks-config.yml:/hooks-config.yml
+
+elasticsearch:
+  image: "elasticsearch:1.6"
+  ports:
+    - "9200:9200"
+  command: -Des.http.cors.enabled=true
+
+pump:
+  image: dockerinaction/ch10_pump
+  ports:
+    - 8000
+  links:
+    - elasticsearch:esnode
+
+calaca:
+  image: dockerinaction/ch10_calaca
+  ports:
+    - "3000:3000"
